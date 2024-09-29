@@ -26,8 +26,6 @@ void MusicPlay::play()
     {
         engine->setSoundVolume(volume);
         sound = engine->play2D((path + fileName).c_str(),false,false,true);
-        thread t(&MusicPlay::checkIsFinished,this);
-        t.detach();
         playing = true;
     }
 }
@@ -55,31 +53,5 @@ void MusicPlay::stop()
         paused = false;
         finished = false;
     }
-}
-class MyISoundStopEventReceiver : public irrklang::ISoundStopEventReceiver
-{
-public:
-    MyISoundStopEventReceiver() {
-    }
-    virtual void OnSoundStopped(irrklang::ISound* sound, irrklang::E_STOP_EVENT_CAUSE reason, void* userData)
-    {
-        // called when the sound has ended playing
-        printf("Sound has ended.\n");
-        if (reason == irrklang::ESEC_SOUND_FINISHED_PLAYING)
-        {
-            MusicPlay* mp = (MusicPlay*)userData;
-            auto index = mp->getPlayingIndex();
-            mp->setPlayingIndex(mp->getNextPlayingIndex());
-            mp->setFileName(mp->getMusicsListVector()[mp->getPlayingIndex()-1]);
-            mp->play();
-        }
-    }
-};
-
-void MusicPlay::checkIsFinished()
-{
-    MyISoundStopEventReceiver* my = new MyISoundStopEventReceiver();
-    sound->setSoundStopEventReceiver(my,this);
-
 }
 

@@ -1,5 +1,22 @@
 #include "dpMusic.h"
 #include <QInputDialog>
+#ifdef _WIN32
+#include <Windows.h>
+#endif // _WIN32
+
+void onMusicEnd(void* musicPlay, void* dpmusic)
+{
+    MusicPlay* mp = (MusicPlay*)musicPlay;
+    dpMusic* dp = (dpMusic*)dpmusic;
+    auto index = mp->getPlayingIndex();
+    mp->setPlayingIndex(mp->getNextPlayingIndex());
+    mp->setFileName(mp->getMusicsListVector()[mp->getPlayingIndex() - 1]);
+    mp->play();
+    dp->getUi().musicInformation->setText(mp->getFileName().c_str());
+    mp->setStopEvent(onMusicEnd, mp, dp);
+
+}
+
 dpMusic::dpMusic(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -54,9 +71,6 @@ void dpMusic::paintEvent(QPaintEvent * e)
 
     QWidget::paintEvent(e);
 }
-#ifdef _WIN32
-    #include <Windows.h>
-#endif // _WIN32
 
 void dpMusic::mousePressEvent(QMouseEvent* e)//鼠标按下事件
 {
@@ -84,6 +98,7 @@ void dpMusic::listViewDoubleClicked(QModelIndex index)
     mp.play();
     ui.play->setIcon(QIcon(":/dpMusic/src/svgs/feather/pause.svg"));
     ui.musicInformation->setText(mp.getFileName().c_str());
+    mp.setStopEvent(onMusicEnd, &mp, this);
 }
 
 void dpMusic::MusicControlPlayPausedClicked()
@@ -118,7 +133,7 @@ void dpMusic::MusicControlPreviousOneClicked()
         mp.stop();
         mp.play();
         ui.musicInformation->setText(mp.getFileName().c_str());
-
+        mp.setStopEvent(onMusicEnd,&mp,this);
 }
 
 void dpMusic::MusicControlNextOneClicked()
@@ -136,4 +151,6 @@ void dpMusic::MusicControlNextOneClicked()
         mp.stop();
         mp.play();
         ui.musicInformation->setText(mp.getFileName().c_str());
+        mp.setStopEvent(onMusicEnd, &mp, this);
 }
+

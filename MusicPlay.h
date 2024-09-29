@@ -48,7 +48,40 @@ public:
 	int getNextPlayingIndex() {
 		return (playingIndex < musicsList.size() ? playingIndex + 1 : 1);
 	}
-	void checkIsFinished();
+	irrklang::ISound* getSound()
+	{
+		return sound;
+	}
+	template<typename F,typename T,typename Y>
+	void setStopEvent(F function,T classMusicPlay,Y classDPMusic) {
+		MyISoundStopEventReceiver* my = new MyISoundStopEventReceiver(function,classMusicPlay,classDPMusic);
+		sound->setSoundStopEventReceiver(my, this);
+	}
+	class MyISoundStopEventReceiver : public irrklang::ISoundStopEventReceiver
+	{
+	public:
+
+		std::function<void(void*,void*)> func;
+		void* mp;
+		void* dp;
+		template<typename function, typename T,typename Y>
+		MyISoundStopEventReceiver(function f,T classMusicPlay,Y classDPMusic) {
+			func = f;
+			mp = classMusicPlay;
+			dp = classDPMusic;
+		}
+		virtual void OnSoundStopped(irrklang::ISound* sound, irrklang::E_STOP_EVENT_CAUSE reason, void* userData)
+		{
+			// called when the sound has ended playing
+			printf("Sound has ended.\n");
+			if (reason == irrklang::ESEC_SOUND_FINISHED_PLAYING)
+			{
+				sound->drop();
+				func(mp,dp);
+			}
+		}
+	private:
+	};
 
 private:
 	std::string path = ".\\";//文件路径
