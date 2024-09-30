@@ -9,3 +9,4 @@ std::string wstr2str_2ANSI(std::wstring text);
 std::wstring str2wstr_2UTF8(std::string text);
 std::wstring str2wstr_2ANSI(std::string text);
 std::string UTF8ToANSI(std::string utf8Text);
+std::string ANSIToUTF8(std::string ansiText);

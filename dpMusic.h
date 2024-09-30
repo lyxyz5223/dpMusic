@@ -30,6 +30,7 @@ public:
         return ui;
     }
 public slots:
+    void showLocalMusicsList();
     void listViewDoubleClicked(QModelIndex index);
     void MusicControlPlayPausedClicked();
     void MusicControlPreviousOneClicked();

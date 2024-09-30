@@ -437,11 +437,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>localListButton</sender>
+   <signal>clicked()</signal>
+   <receiver>dpMusicClass</receiver>
+   <slot>showLocalMusicsList()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>82</x>
+     <y>85</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>221</x>
+     <y>25</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>listViewDoubleClicked(QModelIndex)</slot>
   <slot>MusicControlPlayPausedClicked()</slot>
   <slot>MusicControlPreviousOneClicked()</slot>
   <slot>MusicControlNextOneClicked()</slot>
+  <slot>showLocalMusicsList()</slot>
  </slots>
 </ui>

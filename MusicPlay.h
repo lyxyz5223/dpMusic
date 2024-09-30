@@ -1,37 +1,65 @@
 #pragma once
-#include <irrKlang.h>
 #include <string>
 #include <vector>
 #include <functional>
+#include <miniaudio.h>
+#include "stringProcess.h"
+
+void on_ma_sound_end_proc(void* pUserData, ma_sound* pSound);
 
 class MusicPlay
 {
 public:
-	~MusicPlay() {}
+	~MusicPlay() {
+		ma_engine_uninit(&engine);
+	}
 	MusicPlay(std::string FileName, std::string Path = ".\\");
 	MusicPlay();
 	void play();
 	void pause();
 	void stop();
-	bool isPaused() {
+	bool isPaused() const {
 		return paused;
 	}
-	bool isPlaying() {
+	bool isPlaying() const {
 		return playing;
 	}
-	void setPath(std::string Path) {
+	void setIsPaused(bool TrueOrFalse) {
+		paused = TrueOrFalse;
+	}
+	void setIsPlaying(bool TrueOrFalse) {
+		playing = TrueOrFalse;
+	}
+	void setPathUTF8(std::string Path) {
+		Path = UTF8ToANSI(Path);
 		if (Path != "" && Path.back() != '\\' && Path.back() != '/')
 			Path += '\\';
 		path = Path;
 	}
-	std::string getPath() {
+	void setPathANSI(std::string Path) {
+		if (Path != "" && Path.back() != '\\' && Path.back() != '/')
+			Path += '\\';
+		path = Path;
+	}
+	std::string getPathUTF8() 
+	{
+		return ANSIToUTF8(path);
+	}
+	std::string getPathANSI() {
 		return path;
 	}
-	void setFileName(std::string FileName) {
+	void setFileNameUTF8(std::string FileName) {
+		FileName = UTF8ToANSI(FileName);
 		fileName = FileName;
 	}
-	std::string getFileName() {
+	void setFileNameANSI(std::string FileName) {
+		fileName = FileName;
+	}
+	std::string getFileNameANSI() {
 		return fileName;
+	}
+	std::string getFileNameUTF8() {
+		return ANSIToUTF8(fileName);
 	}
 	void setMusicsListVector(std::vector<std::string> musicNameListVector) {
 		musicsList = musicNameListVector;
@@ -48,51 +76,48 @@ public:
 	int getNextPlayingIndex() {
 		return (playingIndex < musicsList.size() ? playingIndex + 1 : 1);
 	}
-	irrklang::ISound* getSound()
-	{
+	void setIsAutoPlayNextOne(bool TrueOrFalse) {
+		autoPlayNextOne = TrueOrFalse;
+	}
+	bool getIsAutoPlayNextOne() {
+		return autoPlayNextOne;
+	}
+	ma_sound getSound() {
 		return sound;
 	}
-	template<typename F,typename T,typename Y>
-	void setStopEvent(F function,T classMusicPlay,Y classDPMusic) {
-		MyISoundStopEventReceiver* my = new MyISoundStopEventReceiver(function,classMusicPlay,classDPMusic);
-		sound->setSoundStopEventReceiver(my, this);
+	//proc example:
+	//void CallBackProc(void* pUserData, ma_sound* pSound)
+	//{
+	//	//TODO:
+	//}
+	//设置播放完成后的回调函数
+	void setEndCallback(ma_sound_end_proc proc/*void* pUserData, ma_sound* pSound*/,void*parentClass,void*musicplayClass) {
+		procData = { {parentClass,musicplayClass}, proc };
+		sound.endCallback = on_ma_sound_end_proc;//先经过类本身的处理，再发放给用户处理
+		sound.pEndCallbackUserData = &procData;//给类处理的数据
 	}
-	class MyISoundStopEventReceiver : public irrklang::ISoundStopEventReceiver
+	struct ma_sound_pUserData
 	{
-	public:
-
-		std::function<void(void*,void*)> func;
-		void* mp;
-		void* dp;
-		template<typename function, typename T,typename Y>
-		MyISoundStopEventReceiver(function f,T classMusicPlay,Y classDPMusic) {
-			func = f;
-			mp = classMusicPlay;
-			dp = classDPMusic;
-		}
-		virtual void OnSoundStopped(irrklang::ISound* sound, irrklang::E_STOP_EVENT_CAUSE reason, void* userData)
-		{
-			// called when the sound has ended playing
-			printf("Sound has ended.\n");
-			if (reason == irrklang::ESEC_SOUND_FINISHED_PLAYING)
-			{
-				sound->drop();
-				func(mp,dp);
-			}
-		}
-	private:
+		void* parentClass;
+		void* musicplayClass;
 	};
+	struct ma_data {
+		ma_sound_pUserData pUserData;//用户处理数据，包含MusicPlay类和dpMusic类
+		ma_sound_end_proc callBackFunction;//用户的回调函数
+	} procData;
+	bool uninit_sound = false;
 
 private:
 	std::string path = ".\\";//文件路径
 	std::string fileName = "";//文件名
-	irrklang::ISoundEngine* engine;//音乐播放Engine
-	irrklang::ISound* sound;
 	bool paused = false;
 	bool playing = false;
 	std::vector<std::string> musicsList;
 	int playingIndex = 0;
 	bool finished = false;
-	irrklang::ik_f32 volume = 1;
 	bool multiPlay = false;
+	bool autoPlayNextOne = true;
+	ma_result engineResult;
+	ma_engine engine;//音乐播放Engine
+	ma_sound sound;
 };

@@ -61,6 +61,22 @@ std::string UTF8ToANSI(std::string utf8Text)
 	return wstr1;
 }
 
+std::string ANSIToUTF8(std::string ansiText)
+{
+	WCHAR* wstr;//中间量
+	CHAR* str;//转换后的
+	int Tsize = MultiByteToWideChar(CP_ACP, 0, ansiText.c_str(), -1, 0, 0);
+	wstr = new WCHAR[Tsize];
+	MultiByteToWideChar(CP_ACP, 0, ansiText.c_str(), -1, wstr, Tsize);
+	Tsize = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, 0, 0, 0, 0);
+	str = new CHAR[Tsize];
+	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, Tsize, 0, 0);
+	std::string wstr1 = str;
+	delete[]str;
+	delete[]wstr;
+	return wstr1;
+}
+
 #endif // _WIN32
 std::vector<std::string> split(std::string text, std::vector<std::string> delimiter/*separator,分隔符*/, std::string EscapeString /*char EscapeCharacter*/)
 {
