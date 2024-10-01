@@ -189,9 +189,30 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <layout class="QGridLayout" name="gridLayout_3">
+        <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="0">
-          <widget class="QListView" name="musicListView"/>
+          <widget class="MyMusicsListViewParentWidget" name="widget_2" native="true">
+           <layout class="QGridLayout" name="gridLayout_3">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <property name="spacing">
+             <number>6</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="MyMusicsListView" name="musicListView"/>
+            </item>
+           </layout>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -319,6 +340,17 @@
    <class>TranslucentIconButton</class>
    <extends>QPushButton</extends>
    <header>translucenticonbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MyMusicsListView</class>
+   <extends>QListView</extends>
+   <header>mymusicslistview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MyMusicsListViewParentWidget</class>
+   <extends>QWidget</extends>
+   <header>mymusicslistviewparentwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

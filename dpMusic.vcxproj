@@ -101,6 +101,9 @@
   <ItemGroup>
     <ClCompile Include="MusicControlButton.cpp" />
     <ClCompile Include="MusicPlay.cpp" />
+    <ClCompile Include="MyMusicsListViewParentWidget.cpp" />
+    <ClCompile Include="MyScrollBar.cpp" />
+    <ClCompile Include="MyMusicsListView.cpp" />
     <ClCompile Include="stringProcess.cpp" />
     <ClCompile Include="TranslucentIconButton.cpp" />
     <QtRcc Include="dpMusic.qrc" />
@@ -119,6 +122,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MusicPlay.h" />
+    <ClInclude Include="MyMusicsListViewParentWidget.h" />
+    <ClInclude Include="MyScrollBar.h" />
+    <ClInclude Include="MyMusicsListView.h" />
     <ClInclude Include="stringProcess.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

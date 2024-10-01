@@ -77,6 +77,12 @@ void dpMusic::mousePressEvent(QMouseEvent* e)//鼠标按下事件
 void dpMusic::showLocalMusicsList()
 {
     QString p = QInputDialog::getText(this, "请输入音乐文件夹路径", "请输入音乐文件夹路径");
+#ifdef _DEBUG
+    if (p.isEmpty())
+    {
+        p = "C:\\Users\\lyxyz5223\\Desktop\\LxMusicDownloads";
+    }
+#endif // _DEBUG
     if (!p.isEmpty())
     {
         mp.setPathUTF8(p.toStdString());
