@@ -50,12 +50,13 @@ dpMusic::~dpMusic()
 void dpMusic::paintEvent(QPaintEvent * e)
 {
     QPainter p(this);
-    QBrush brush(QColor(255, 255, 240,150));
+    QBrush brush(QColor(255, 250, 240, 255));
     p.setBrush(brush);
     p.setRenderHints(QPainter::RenderHint::Antialiasing);
     qreal rad = qreal(width() > height() ? height() : width()) / 35;
     p.drawRoundedRect(rect(),rad,rad,Qt::SizeMode::AbsoluteSize);
     p.setBrush(Qt::NoBrush);
+    p.setPen(QColor(130, 130, 130, 150));
     rad = qreal(ui.horizontalLayout_3->geometry().width() > ui.horizontalLayout_3->geometry().height() ? ui.horizontalLayout_3->geometry().height() : ui.horizontalLayout_3->geometry().width()) / 5;
     p.drawRoundedRect(ui.horizontalLayout_3->geometry(),rad,rad,Qt::SizeMode::AbsoluteSize);
 
@@ -141,36 +142,43 @@ void dpMusic::MusicControlPlayPausedClicked()
 
 void dpMusic::MusicControlPreviousOneClicked()
 {
-    if (mp.getPlayingIndex() > 1)
+    if (mp.getMusicsListVector().size())
     {
-        mp.setPlayingIndex(mp.getPlayingIndex() - 1);
-    }
-    else
-    {
-        //QMessageBox::information(this, "~~~", "这已经是第一首了哦~");
-        mp.setPlayingIndex(mp.getMusicsListVector().size());
-    }
+
+        if (mp.getPlayingIndex() > 1)
+        {
+            mp.setPlayingIndex(mp.getPlayingIndex() - 1);
+        }
+        else
+        {
+            //QMessageBox::information(this, "~~~", "这已经是第一首了哦~");
+            mp.setPlayingIndex(mp.getMusicsListVector().size());
+        }
         mp.setFileNameUTF8(mp.getMusicsListVector()[mp.getPlayingIndex() - 1]);
         mp.play();
+        ui.play->setIcon(QIcon(":/dpMusic/src/svgs/feather/pause.svg"));
         ui.musicInformation->setText(mp.getFileNameUTF8().c_str());
         mp.setEndCallback(onMusicEnd, this, &mp);
-
+    }
 }
 
 void dpMusic::MusicControlNextOneClicked()
 {
-    if (mp.getPlayingIndex() < mp.getMusicsListVector().size())
+    if (mp.getMusicsListVector().size())
     {
-        mp.setPlayingIndex(mp.getPlayingIndex() + 1);
-    }
-    else
-    {
-        //QMessageBox::information(this, "~~~", "这已经是最后一首了哦~");
-        mp.setPlayingIndex(1);
-    }
+        if (mp.getPlayingIndex() < mp.getMusicsListVector().size())
+        {
+            mp.setPlayingIndex(mp.getPlayingIndex() + 1);
+        }
+        else
+        {
+            //QMessageBox::information(this, "~~~", "这已经是最后一首了哦~");
+            mp.setPlayingIndex(1);
+        }
         mp.setFileNameUTF8(mp.getMusicsListVector()[mp.getPlayingIndex() - 1]);
         mp.play();
+        ui.play->setIcon(QIcon(":/dpMusic/src/svgs/feather/pause.svg"));
         ui.musicInformation->setText(mp.getFileNameUTF8().c_str());
         mp.setEndCallback(onMusicEnd, this, &mp);
-
+    }
 }

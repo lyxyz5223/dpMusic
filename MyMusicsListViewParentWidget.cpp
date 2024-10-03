@@ -13,7 +13,9 @@ void MyMusicsListViewParentWidget::paintEvent(QPaintEvent* e)
 	p.setBrush(QBrush(QColor(255,0,0,255)));
 	p.setPen(Qt::NoPen);
 	qreal DivideBy = 50;
-	roundX = roundY = (size().width() > size().height() ? size().height()/DivideBy : size().width()/DivideBy);
-	p.drawRoundedRect(rect(), roundX, roundY, Qt::SizeMode::AbsoluteSize);
+	//roundX = roundY = (size().width() > size().height() ? size().height()/DivideBy : size().width()/DivideBy);
+	roundX = roundY = 10;
+	p.setRenderHints(QPainter::Antialiasing);
+	//p.drawRoundedRect(rect(), roundX, roundY, Qt::SizeMode::AbsoluteSize);
 	QWidget::paintEvent(e);
 }

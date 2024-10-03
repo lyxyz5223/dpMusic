@@ -123,7 +123,7 @@
   <ItemGroup>
     <ClInclude Include="MusicPlay.h" />
     <ClInclude Include="MyMusicsListViewParentWidget.h" />
-    <ClInclude Include="MyScrollBar.h" />
+    <QtMoc Include="MyScrollBar.h" />
     <ClInclude Include="MyMusicsListView.h" />
     <ClInclude Include="stringProcess.h" />
   </ItemGroup>

@@ -1,110 +1,83 @@
 #include "MyMusicsListView.h"
 #include <QPainter>
-#include "MyScrollBar.h"
 #include <QPainterPath>
 #include <QProxyStyle>
 
 MyMusicsListView::MyMusicsListView(QWidget* parent) : QListView(parent)
 {
-	MyScrollBar* myVerticalScrollBar = new MyScrollBar();
 	setVerticalScrollBar(myVerticalScrollBar);
 	setFrameStyle(QFrame::NoFrame);	// Must
 	setViewport(viewPort);
+	myVerticalScrollBar->setRadius(7, 7);
+	setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+	setItemDelegate(myMusicsListViewItemDelegate);
+	myMusicsListViewItemDelegate->setVerticalScrollBarWidth(myVerticalScrollBar->width());
 }
 
 void MyMusicsListView::paintEvent(QPaintEvent* e)
 {
 	
 	QPainter p(viewport());
-	p.setBrush(QBrush(QColor(110, 100, 110, 255)));
-	qreal roundX = 0, roundY = 0;
-	roundX = ((MyMusicsListViewParentWidget*)parent())->roundX;
-	roundY = ((MyMusicsListViewParentWidget*)parent())->roundY;
+	p.setRenderHints(QPainter::Antialiasing);
+	p.setBrush(QBrush(QColor(110, 100, 110, 0)));
+	p.setPen(Qt::NoPen);
+	qreal roundX, roundY;
+	roundX = myVerticalScrollBar->getRadius().x;
+	roundY = myVerticalScrollBar->getRadius().y;
 	p.drawRoundedRect(rect(), roundX, roundY, Qt::AbsoluteSize);
-	//qreal x = size().width() - verticalScrollBar()->size().width();
-	//viewPort->resize(size().width() - 2*verticalScrollBar()->size().width(), viewport()->height());
-	//viewPort->move(roundX,0);
+	//p.fillRect(rect(), QBrush(QColor(110, 100, 110, 255)));
+	//qreal corner_radius = roundX;
+	//QPainterPath path;
+	//path.setFillRule(Qt::WindingFill);
+	//path.moveTo(corner_radius, corner_radius);
+	//path.arcTo(0, 0, 2 * corner_radius, 2 * corner_radius, 90.0, 90.0);
+	//path.moveTo(0, corner_radius);
+	//path.lineTo(0, height() - corner_radius);
+	//path.lineTo(corner_radius, height() - corner_radius);
+	//path.lineTo(corner_radius, corner_radius);
+	//path.moveTo(corner_radius, height() - corner_radius);
+	//path.arcTo(0, height() - 2 * corner_radius, 2 * corner_radius, 2 * corner_radius, 180.0, 90.0);
+	//path.lineTo(width(), height());
+	//path.lineTo((width()), 0);
+	//path.lineTo(corner_radius, 0);
+	//p.drawPath(path);
+	myMusicsListViewItemDelegate->setVerticalScrollBarWidth(myVerticalScrollBar->width());
+
 	QListView::paintEvent(e);
 }
 
-//void MyMusicsListView::drawPrimitive(
-//    QStyle::PrimitiveElement element,
-//    const QStyleOption* option,
-//    QPainter* painter,
-//    const QWidget* widget)
-//{
-//    switch (element)
-//    {
-//        /* PE_PanelItemViewItem 主要负责绘制列表项的背景（以及选中背景/高亮背景） */
-//    case QStyle::PE_PanelItemViewItem:
-//    {
-//        const QStyleOptionViewItem* opt = qstyleoption_cast<const QStyleOptionViewItem*>(option);
-//        if (nullptr == opt) { break; }
-//
-//        QColor c(Qt::white);	/* 默认背景色 */
-//        if (QStyle::State_MouseOver & opt->state)
-//        {
-//            c = QColor(0, 0, 255, 255 * 0.2);
-//        }
-//        else if (QStyle::State_Selected & opt->state)
-//        {
-//            c = QColor(0, 0, 255, 255 * 0.5);
-//        }
-//
-//        int x, y, w, h;
-//        opt->rect.getRect(&x, &y, &w, &h);
-//
-//        QPainterPath path;
-//        int rowHeight = 0;
-//        qreal Radius = 0;
-//        /* 最上一行 */
-//        if (0 == y)
-//        {
-//            /* 创建最上一行，带圆角的矩形路径 */
-//            path.moveTo(x, y + h);
-//            path.arcTo(QRect(x, y, 2 * Radius - 5, 2 * Radius - 5), 180, -90);
-//            path.lineTo(x + w, y);
-//            path.lineTo(x + w, y + h);
-//            path.closeSubpath();
-//        }
-//        /* 最下一行 */
-//        bool isLastRow = false;
-//            /* 列表可显示行数 */
-//        int rowCount = opt->rect.height() / opt->rect.height();
-//        /* 由 y 坐标与行高计算行索引 */
-//        int index = opt->rect.y() / opt->rect.height();
-//
-//        if (rowCount == index)
-//        {
-//            rowHeight = opt->rect.height() - index * opt->rect.height();
-//            isLastRow = true;
-//        }
-//        else if (isLastRow)
-//        {
-//            /* 创建最下一行，带圆角的矩形路径 */
-//            path.moveTo(x, y);
-//            path.lineTo(x + w, y);
-//            path.lineTo(x + w, y + rowHeight);
-//            path.arcTo(QRect(x, y + rowHeight - 2 * Radius, 2 * Radius, 2 * Radius), 270, -90);
-//            path.closeSubpath();
-//        }
-//        else
-//        {
-//            path.addRect(QRect(x, y, w, h));
-//        }
-//
-//        painter->save();
-//        painter->setRenderHint(QPainter::Antialiasing);
-//        painter->setPen(Qt::NoPen);
-//        painter->setBrush(QBrush(c));
-//        painter->drawPath(path);
-//        painter->restore();
-//
-//        return;
-//    }
-//    default:
-//        break;
-//    }
-//    QProxyStyle* qp = new QProxyStyle();
-//    qp->drawPrimitive(element, option, painter, widget);
-//}
+
+void MyMusicsListViewItemDelegate::paint(QPainter* painter,
+	const QStyleOptionViewItem& option,
+	const QModelIndex& index) const
+{
+	printf("MyMusicsListViewItemDelegate---paint!!  ");
+	painter->save();
+	painter->setPen(Qt::NoPen);
+	if (index.isValid()) {
+		painter->setRenderHints(QPainter::Antialiasing);
+		// Item 矩形区域
+		QRect rect = option.rect;
+		// 鼠标悬停或者选中时改变背景色
+		if (option.state.testFlag(QStyle::State_MouseOver)) {
+			painter->setBrush(QColor(225, 221, 221, 255));
+		}
+		else if (option.state.testFlag(QStyle::State_Selected)) {
+			painter->setBrush(QColor(200, 200, 200, 255));
+		}
+		else {
+			painter->setBrush(QColor(0, 0, 0, 0));
+		}
+		painter->drawRoundedRect(QRect(rect.x(), rect.y(), rect.width() - verticalScrollBarWidth , rect.height()), 5, 5);
+		painter->restore();
+		QVariant var = index.data(Qt::ItemDataRole::DisplayRole);
+		QString itemData = var.value<QString>();
+		var = index.data(Qt::ItemDataRole::FontRole);
+		QFont font = var.value<QFont>();
+		QFontMetrics qfm(font);
+		QTextOption qto;
+		qto.setAlignment(Qt::AlignVCenter);
+		painter->drawText(QRect(rect.x() + qfm.averageCharWidth(), rect.y(), rect.width(), rect.height()), itemData, qto);
+	}
+	//QStyledItemDelegate::paint(painter, option, index);
+}
