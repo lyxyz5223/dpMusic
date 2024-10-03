@@ -75,6 +75,7 @@ void dpMusic::mousePressEvent(QMouseEvent* e)//鼠标按下事件
     }
     QMainWindow::mousePressEvent(e);
 }
+
 void dpMusic::showLocalMusicsList()
 {
     QString p = QInputDialog::getText(this, "请输入音乐文件夹路径", "请输入音乐文件夹路径");

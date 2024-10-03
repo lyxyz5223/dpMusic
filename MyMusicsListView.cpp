@@ -11,7 +11,6 @@ MyMusicsListView::MyMusicsListView(QWidget* parent) : QListView(parent)
 	myVerticalScrollBar->setRadius(7, 7);
 	setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 	setItemDelegate(myMusicsListViewItemDelegate);
-	myMusicsListViewItemDelegate->setVerticalScrollBarWidth(myVerticalScrollBar->width());
 }
 
 void MyMusicsListView::paintEvent(QPaintEvent* e)
@@ -41,8 +40,13 @@ void MyMusicsListView::paintEvent(QPaintEvent* e)
 	//path.lineTo((width()), 0);
 	//path.lineTo(corner_radius, 0);
 	//p.drawPath(path);
-	myMusicsListViewItemDelegate->setVerticalScrollBarWidth(myVerticalScrollBar->width());
-
+	bool isV = myVerticalScrollBar->isVisible();
+	int w = myVerticalScrollBar->width();
+	if(myVerticalScrollBar->isVisible())
+		myMusicsListViewItemDelegate->setVerticalScrollBarWidth(myVerticalScrollBar->width());
+	else
+		myMusicsListViewItemDelegate->setVerticalScrollBarWidth(0);
+	myMusicsListViewItemDelegate->setViewPortWidth(viewport()->width());
 	QListView::paintEvent(e);
 }
 
@@ -58,6 +62,7 @@ void MyMusicsListViewItemDelegate::paint(QPainter* painter,
 		painter->setRenderHints(QPainter::Antialiasing);
 		// Item 矩形区域
 		QRect rect = option.rect;
+		rect.setWidth(viewPortWidth);
 		// 鼠标悬停或者选中时改变背景色
 		if (option.state.testFlag(QStyle::State_MouseOver)) {
 			painter->setBrush(QColor(225, 221, 221, 255));
@@ -68,7 +73,7 @@ void MyMusicsListViewItemDelegate::paint(QPainter* painter,
 		else {
 			painter->setBrush(QColor(0, 0, 0, 0));
 		}
-		painter->drawRoundedRect(QRect(rect.x(), rect.y(), rect.width() - verticalScrollBarWidth , rect.height()), 5, 5);
+		painter->drawRoundedRect(QRect(rect.x(), rect.y(), rect.width()/* - verticalScrollBarWidth */, rect.height()), 5, 5);
 		painter->restore();
 		QVariant var = index.data(Qt::ItemDataRole::DisplayRole);
 		QString itemData = var.value<QString>();

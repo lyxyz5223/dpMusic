@@ -24,8 +24,12 @@ public:
 	void setVerticalScrollBarWidth(int width) {
 		verticalScrollBarWidth = width;
 	}
+	void setViewPortWidth(int width) {
+		viewPortWidth = width;
+	}
 private:
-	int verticalScrollBarWidth;
+	int verticalScrollBarWidth = 0;
+	int viewPortWidth = 0;
 };
 class MyMusicsListView : public QListView
 {
