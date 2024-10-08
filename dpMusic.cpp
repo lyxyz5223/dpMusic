@@ -34,7 +34,7 @@ dpMusic::dpMusic(QWidget *parent)
     ui.setupUi(this);
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground, true);
-    mp.setPathUTF8("C:\\Users\\lyxyz5223\\Desktop\\LxMusicDownloads\\");//设置播放路径
+    //mp.setPathUTF8("C:\\Users\\lyxyz5223\\Desktop\\LxMusicDownloads\\");//设置播放路径
     //设置歌曲名，若歌曲名带有路径，请setPathUTF8("");
     //mp.setFileNameUTF8("野花香 (Haocore Mix) - Daily天利、EndCat-终猫.mp3");
     //mp.play();
@@ -53,11 +53,14 @@ void dpMusic::paintEvent(QPaintEvent * e)
     QBrush brush(QColor(255, 250, 240, 255));
     p.setBrush(brush);
     p.setRenderHints(QPainter::RenderHint::Antialiasing);
-    qreal rad = qreal(width() > height() ? height() : width()) / 35;
+    qreal rad;
+    //rad = qreal(width() > height() ? height() : width()) / 35;
+    rad = 10;
     p.drawRoundedRect(rect(),rad,rad,Qt::SizeMode::AbsoluteSize);
     p.setBrush(Qt::NoBrush);
     p.setPen(QColor(130, 130, 130, 150));
-    rad = qreal(ui.horizontalLayout_3->geometry().width() > ui.horizontalLayout_3->geometry().height() ? ui.horizontalLayout_3->geometry().height() : ui.horizontalLayout_3->geometry().width()) / 5;
+    //rad = qreal(ui.horizontalLayout_3->geometry().width() > ui.horizontalLayout_3->geometry().height() ? ui.horizontalLayout_3->geometry().height() : ui.horizontalLayout_3->geometry().width()) / 5;
+    rad = 5;
     p.drawRoundedRect(ui.horizontalLayout_3->geometry(),rad,rad,Qt::SizeMode::AbsoluteSize);
 
     QWidget::paintEvent(e);
@@ -96,26 +99,32 @@ void dpMusic::showLocalMusicsList()
         QStringList filterList;//后缀过滤
         filterList << "*.flac" << "*.mp3" << "*.wav" << "*.ogg" << "*.ape";
         fil = dir.entryInfoList(filterList, QDir::Filter::Files, QDir::SortFlag::Name);
+        ui.musicListWidget->setResizeMode(QListView::Adjust);
+        ui.musicListWidget->setAutoScroll(true);
+        ui.musicListWidget->clear();
         for (QFileInfo qfi : fil)
         {
             MusicNameList.push_back(qfi.fileName().toStdString());
             strList.push_back(qfi.fileName());
             printf(UTF8ToANSI("QFileInfoList：%s\n").c_str(), UTF8ToANSI(qfi.fileName().toStdString()).c_str());
+            QStringList l;
+            l.push_back(qfi.fileName());
+            l.push_back(qfi.path());
+            l.push_back(qfi.fileName());
+            l.push_back("03:25");
+            ui.musicListWidget->addRow(l);
         }
-        QStringListModel* modelitem;
-        modelitem = new QStringListModel(strList);
         mp.setMusicsListVector(MusicNameList);
-        ui.musicListView->setModel(modelitem);
-        ui.musicListView->setEditTriggers(QListView::NoEditTriggers);
+        ui.musicListWidget->setEditTriggers(QListView::NoEditTriggers);
     }
 }
 void dpMusic::listViewDoubleClicked(QModelIndex index)
 {
-    mp.setFileNameUTF8(ui.musicListView->model()->data(index).toString().toStdString());
-    //while (ui.musicListView->model()->canFetchMore(index))
-    //    ui.musicListView->model()->fetchMore(index);
-    int rowCount = ui.musicListView->model()->rowCount();
-    int columnCount = ui.musicListView->model()->columnCount();
+    mp.setFileNameUTF8(ui.musicListWidget->model()->data(index).toString().toStdString());
+    //while (ui.musicListWidget->model()->canFetchMore(index))
+    //    ui.musicListWidget->model()->fetchMore(index);
+    int rowCount = ui.musicListWidget->model()->rowCount();
+    int columnCount = ui.musicListWidget->model()->columnCount();
     mp.setPlayingIndex(index.row()*(columnCount)+index.column()+1);
     //if (mp.isPlaying())//在类里面已经实现了检测，无需再次检测
     mp.play();
@@ -182,4 +191,12 @@ void dpMusic::MusicControlNextOneClicked()
         ui.musicInformation->setText(mp.getFileNameUTF8().c_str());
         mp.setEndCallback(onMusicEnd, this, &mp);
     }
+}
+
+void dpMusic::maximumBtnClicked()
+{
+    if (isMaximized() || isFullScreen())
+        showNormal();
+    else
+        showMaximized();
 }

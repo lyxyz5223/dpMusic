@@ -9,6 +9,7 @@
 #include <QStringConverter>
 #include <QStringListModel>
 #include <qmessagebox.h>
+#include <QStandardItemModel>
 
 //库
 #include "MusicPlay.h"
@@ -35,6 +36,8 @@ public slots:
     void MusicControlPlayPausedClicked();
     void MusicControlPreviousOneClicked();
     void MusicControlNextOneClicked();
+    void maximumBtnClicked();
+
 protected:
     void paintEvent(QPaintEvent* e) override;
     void mousePressEvent(QMouseEvent* e);

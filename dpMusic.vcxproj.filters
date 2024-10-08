@@ -58,13 +58,16 @@
     <ClCompile Include="MusicPlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MyMusicsListView.cpp">
+    <ClCompile Include="MyMusicsListWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MyScrollBar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MyMusicsListViewParentWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TranslucentTextButton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -86,10 +89,13 @@
     <ClInclude Include="MusicPlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MyMusicsListView.h">
+    <ClInclude Include="MyMusicsListWidget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MyMusicsListViewParentWidget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TranslucentTextButton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
