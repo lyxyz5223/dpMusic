@@ -61,15 +61,56 @@ public:
 	std::string getFileNameUTF8() {
 		return ANSIToUTF8(fileName);
 	}
+	void setMusicTitleUTF8(std::string MusicTitle) {
+		MusicTitle = UTF8ToANSI(MusicTitle);
+		musicTitle = MusicTitle;
+	}
+	void setMusicTitleANSI(std::string MusicTitle) {
+		musicTitle = musicTitle;
+	}
+	std::string getMusicTitleANSI() {
+		return musicTitle;
+	}
+	std::string getMusicTitleUTF8() {
+		return ANSIToUTF8(musicTitle);
+	}
+	void setTitlesListVector(std::vector<std::string> titlesVector) {
+		titlesList = titlesVector;
+	}
+	std::vector<std::string> getTitlesListVector() {
+		return titlesList;
+	}
+	void setArtistsListVector(std::vector<std::vector<std::string>> artistsVector) {
+		artistsList = artistsVector;
+	}
+	std::vector<std::vector<std::string>> getArtistsListVector() {
+		return artistsList;
+	}
+	void setAlbumTitlesListVector(std::vector<std::string> albumTitlesVector) {
+		albumTitlesList = albumTitlesVector;
+	}
+	std::vector<std::string> getAlbumTitlesListVector() {
+		return albumTitlesList;
+	}
+	void setBasicMusicsInformations(
+		std::vector<std::string> titlesVector,
+		std::vector<std::vector<std::string>> artistsVector,
+		std::vector<std::string> albumTitlesVector) {
+		titlesList = titlesVector;
+		artistsList = artistsVector;
+		albumTitlesList = albumTitlesVector;
+	}
 	void setMusicsListVector(std::vector<std::string> musicNameListVector) {
 		musicsList = musicNameListVector;
 	}
 	std::vector<std::string> getMusicsListVector() {
 		return musicsList;
 	}
+	//PlayingIndex从1开始！
 	void setPlayingIndex(int index) {
 		playingIndex = index;
 	}
+	//PlayingIndex从1开始！
 	int getPlayingIndex() {
 		return playingIndex;
 	}
@@ -110,10 +151,15 @@ public:
 private:
 	std::string path = ".\\";//文件路径
 	std::string fileName = "";//文件名
+	std::string musicTitle = "";//歌曲名
 	bool paused = false;
 	bool playing = false;
+	//以下几个容器中的字符串（包括容器的容器中的）均为UTF-8编码格式下的字符串
 	std::vector<std::string> musicsList;
-	int playingIndex = 0;
+	std::vector<std::string> titlesList;
+	std::vector<std::vector<std::string>> artistsList;
+	std::vector<std::string> albumTitlesList;
+	int playingIndex = 0;//从1开始！
 	bool finished = false;
 	bool multiPlay = false;
 	bool autoPlayNextOne = true;

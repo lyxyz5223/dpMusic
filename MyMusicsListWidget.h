@@ -74,7 +74,7 @@ public:
 		QHBoxLayout* l = new QHBoxLayout(w);
 		l->setContentsMargins(0, 0, 0, 0);
 		l->setSpacing(15);
-		QLabel* numCountLabel = new QLabel(std::to_string((char)this->count()).c_str());
+		QLabel* numCountLabel = new QLabel(std::to_string(this->count()).c_str());
 		numCountLabel->setAlignment(Qt::AlignCenter);
 		numCountLabel->setMinimumSize(24, 24);
 		numCountLabel->setMaximumSize(24, 24);
