@@ -81,6 +81,12 @@
     <QtMoc Include="MyScrollBar.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="TranslucentTextButton.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="MyMusicsListWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stringProcess.h">
@@ -89,13 +95,7 @@
     <ClInclude Include="MusicPlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MyMusicsListWidget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MyMusicsListViewParentWidget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TranslucentTextButton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

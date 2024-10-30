@@ -124,9 +124,9 @@
   <ItemGroup>
     <ClInclude Include="MusicPlay.h" />
     <ClInclude Include="MyMusicsListViewParentWidget.h" />
-    <ClInclude Include="TranslucentTextButton.h" />
+    <QtMoc Include="TranslucentTextButton.h" />
     <QtMoc Include="MyScrollBar.h" />
-    <ClInclude Include="MyMusicsListWidget.h" />
+    <QtMoc Include="MyMusicsListWidget.h" />
     <ClInclude Include="stringProcess.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

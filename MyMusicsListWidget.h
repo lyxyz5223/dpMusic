@@ -40,14 +40,14 @@ class MyMusicsListWidgetItem :public TranslucentTextButton
 public:
 	MyMusicsListWidgetItem(QWidget* parent = nullptr) {
 		if (parent != nullptr)
-			QPushButton::setParent(parent);
+			QLabel::setParent(parent);
 	}
 	MyMusicsListWidgetItem(QString text, QWidget* parent = nullptr)
 	{
 		if (parent != nullptr)
-			QPushButton::setParent(parent);
+			QLabel::setParent(parent);
 		this->setText(text);
-		QPushButton::setText("");
+		QLabel::setText("");
 		this->adjustSize();
 	}
 
@@ -62,11 +62,10 @@ private:
 };
 class MyMusicsListWidget : public QListWidget
 {
-
-public:
-	~MyMusicsListWidget(){}
-	MyMusicsListWidget(QWidget* parent = nullptr);
-	void addRow(QStringList strlist) {
+	Q_OBJECT
+public slots:
+	//添加列表项的操作过程
+	void addRowProc(QStringList strlist) {
 		QListWidgetItem* i = new QListWidgetItem(strlist[0]);
 		this->addItem(i);
 		QWidget* w = new QWidget();
@@ -88,11 +87,11 @@ public:
 			btn = new MyMusicsListWidgetItem(strButton, w);
 			l->addWidget(btn);
 			btn->setRow(count());
-			connect(btn, &QPushButton::clicked, this, [=] {emit doubleClicked(model()->index(btn->getRow()-1, 0)); });
+			connect(btn, &MyMusicsListWidgetItem::doubleClicked, this, [=] {emit doubleClicked(model()->index(btn->getRow() - 1, 0)); });
 		}
 		//时长
 		strButton = strlist[3].replace("&", "&&");
-		QLabel* musicLengthLabel = new QLabel(strButton,w);
+		QLabel* musicLengthLabel = new QLabel(strButton, w);
 		l->addWidget(musicLengthLabel);
 		l->setStretch(0, 0);
 		l->setStretch(1, 1);
@@ -102,7 +101,15 @@ public:
 		w->setLayout(l);
 		this->setItemWidget(i, w);
 	}
+signals:
+	void addRowSignal(QStringList strlist);
 
+public:
+	~MyMusicsListWidget(){}
+	MyMusicsListWidget(QWidget* parent = nullptr);
+	void addRow(QStringList strlist) {
+		emit addRowSignal(strlist);//发送添加列表项的信号
+	}
 protected:
 	void paintEvent(QPaintEvent* e)override;
 

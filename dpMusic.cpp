@@ -83,7 +83,105 @@ void dpMusic::mousePressEvent(QMouseEvent* e)//鼠标按下事件
     }
     QMainWindow::mousePressEvent(e);
 }
-
+void dpMusic::showLocalMusicsListProc(QString path)
+{
+    mp.setPathUTF8(path.toStdString());
+    QDir dir;
+    dir.setPath(mp.getPathUTF8().c_str());
+    QFileInfoList fil;
+    QStringList strList;//文件列表，歌曲信息
+    std::vector<std::string> musicsList;//歌曲信息
+    std::vector<std::string> titlesList;//歌曲标题信息
+    std::vector<std::vector<std::string>> artistsList;//歌曲歌手信息
+    std::vector<std::string> albumTitlesList;//歌曲专辑名信息
+    QStringList filterList;//后缀过滤
+    filterList << "*.flac" << "*.mp3" << "*.wav" << "*.ogg" << "*.ape";
+    fil = dir.entryInfoList(filterList, QDir::Filter::Files, QDir::SortFlag::Name);
+    ui.musicListWidget->setResizeMode(QListView::Adjust);
+    ui.musicListWidget->setAutoScroll(true);
+    ui.musicListWidget->clear();
+    for (QFileInfo qfi : fil)//遍历列表
+    {
+        musicsList.push_back(qfi.fileName().toStdString());
+        strList.push_back(qfi.fileName());
+        printf(UTF8ToANSI("QFileInfoList：%s\n").c_str(), UTF8ToANSI(qfi.fileName().toStdString()).c_str());
+#ifdef _WIN32
+        //Win32获取歌曲信息
+        QStringList l;//信息列表
+        IPropertyStore* lpMusicInfo = 0;
+        std::wstring musicAbsoluteFilePath = qfi.absoluteFilePath().toStdWString();
+        while (musicAbsoluteFilePath.find('/') != std::wstring::npos)
+            musicAbsoluteFilePath.replace(musicAbsoluteFilePath.find('/'), 1, L"\\");
+        HRESULT hr = SHGetPropertyStoreFromParsingName(musicAbsoluteFilePath.c_str(), NULL, GPS_DEFAULT, __uuidof(IPropertyStore), (void**)&lpMusicInfo);
+        if (SUCCEEDED(hr))
+        {
+            PROPVARIANT* musicInfoValue = new PROPVARIANT;
+            std::wstring musicInfoWstr;
+            std::vector<std::string> artistsVector;
+            lpMusicInfo->GetValue(PKEY_Title, musicInfoValue);
+            if (musicInfoValue->bstrVal != NULL)
+                musicInfoWstr = (WCHAR*)musicInfoValue->bstrVal;
+            else
+                musicInfoWstr = qfi.fileName().toStdWString();
+            titlesList.push_back(wstr2str_2UTF8(musicInfoWstr));//歌曲名添加进入MusicPlay模块的列表
+            l.push_back(QString::fromStdWString(musicInfoWstr));//歌曲名添加进展示的歌曲列表
+            musicInfoWstr = L"";
+            lpMusicInfo->GetValue(PKEY_Music_Artist, musicInfoValue);
+            for (ULONG i = 0; i < musicInfoValue->calpwstr.cElems; i++)
+            {
+                musicInfoWstr += musicInfoValue->calpwstr.pElems[i];
+                artistsVector.push_back(wstr2str_2UTF8(musicInfoValue->calpwstr.pElems[i]));
+                if (i != musicInfoValue->calpwstr.cElems - 1)
+                    musicInfoWstr += L"、";
+            }
+            if (musicInfoWstr == L"")
+                l[0] = qfi.fileName();
+            artistsList.push_back(artistsVector);//作曲家添加到MusicPlay模块的作曲家列表
+            l.push_back(QString::fromStdWString(musicInfoWstr));//歌手添加进展示的歌曲列表中
+            lpMusicInfo->GetValue(PKEY_Music_AlbumTitle, musicInfoValue);
+            if (musicInfoValue->bstrVal != NULL)
+                musicInfoWstr = (WCHAR*)musicInfoValue->bstrVal;
+            else
+                musicInfoWstr = L"";
+            albumTitlesList.push_back(wstr2str_2UTF8(musicInfoWstr));//专辑名添加进MusicPlay模块的专辑名列表中
+            l.push_back(QString::fromStdWString(musicInfoWstr));//专辑名添加进展示的歌曲列表中
+            lpMusicInfo->GetValue(PKEY_Media_Duration, musicInfoValue);
+            ULONGLONG MusicDuration = musicInfoValue->uhVal.QuadPart;// 100ns units, not milliseconds
+            int Minutes = MusicDuration / 10000 / 1000 / 60;
+            int Seconds = MusicDuration / 10000 / 1000 % 60;
+            musicInfoWstr = L"";
+            if (Minutes < 10)
+                musicInfoWstr += L'0';
+            musicInfoWstr += std::to_wstring(Minutes) + L":";
+            if (Seconds < 10)
+                musicInfoWstr += L'0';
+            musicInfoWstr += std::to_wstring(Seconds);
+            l.push_back(QString::fromStdWString(musicInfoWstr));
+            delete musicInfoValue;
+            lpMusicInfo->Release();
+        }
+        else
+        {
+            titlesList.push_back(qfi.fileName().toStdString());
+            artistsList.push_back(std::vector<std::string>());
+            albumTitlesList.push_back("");
+            l.push_back(qfi.fileName());
+            l.push_back("");
+            l.push_back("");
+            l.push_back("");
+        }
+        ui.musicListWidget->addRow(l);
+        l.clear();
+#endif //_WIN32
+    }
+    mp.setMusicsListVector(musicsList);
+    mp.setBasicMusicsInformations(titlesList, artistsList, albumTitlesList);
+    musicsList.clear();
+    titlesList.clear();
+    artistsList.clear();
+    albumTitlesList.clear();
+    ui.musicListWidget->setEditTriggers(QListView::NoEditTriggers);
+}
 void dpMusic::showLocalMusicsList()
 {
     QString p = QInputDialog::getText(this, "请输入音乐文件夹路径", "请输入音乐文件夹路径");
@@ -91,97 +189,14 @@ void dpMusic::showLocalMusicsList()
     if (p.isEmpty())
     {
         p = "C:\\Users\\lyxyz5223\\Desktop\\LxMusicDownloads";
+        p = "E:\\mp3播放器\\CloudMusic";
+        //E:\mp3播放器\CloudMusic
     }
 #endif // _DEBUG
     if (!p.isEmpty())
     {
-        mp.setPathUTF8(p.toStdString());
-        QDir dir;
-        dir.setPath(mp.getPathUTF8().c_str());
-        QFileInfoList fil;
-        QStringList strList;//文件列表
-        std::vector<std::string> musicsList;
-        std::vector<std::string> titlesList;
-        std::vector<std::vector<std::string>> artistsList;
-        std::vector<std::string> albumTitlesList;
-        QStringList filterList;//后缀过滤
-        filterList << "*.flac" << "*.mp3" << "*.wav" << "*.ogg" << "*.ape";
-        fil = dir.entryInfoList(filterList, QDir::Filter::Files, QDir::SortFlag::Name);
-        ui.musicListWidget->setResizeMode(QListView::Adjust);
-        ui.musicListWidget->setAutoScroll(true);
-        ui.musicListWidget->clear();
-        for (QFileInfo qfi : fil)
-        {
-            musicsList.push_back(qfi.fileName().toStdString());
-            strList.push_back(qfi.fileName());
-            printf(UTF8ToANSI("QFileInfoList：%s\n").c_str(), UTF8ToANSI(qfi.fileName().toStdString()).c_str());
-            //Win32获取歌曲信息
-            QStringList l;//信息列表
-            IPropertyStore* lpMusicInfo = 0;
-            std::wstring musicAbsoluteFilePath = qfi.absoluteFilePath().toStdWString();
-            while (musicAbsoluteFilePath.find('/') != std::wstring::npos)
-                musicAbsoluteFilePath.replace(musicAbsoluteFilePath.find('/'), 1, L"\\");
-            HRESULT hr = SHGetPropertyStoreFromParsingName(musicAbsoluteFilePath.c_str(), NULL, GPS_DEFAULT, __uuidof(IPropertyStore), (void**)&lpMusicInfo);
-            if (SUCCEEDED(hr))
-            {
-                PROPVARIANT musicInfoValue;
-                std::wstring musicInfoWstr;
-                std::vector<std::string> artistsVector;
-                lpMusicInfo->GetValue(PKEY_Title, &musicInfoValue);
-                if(musicInfoValue.bstrVal != NULL)
-                    musicInfoWstr = (WCHAR*)musicInfoValue.bstrVal;
-                else
-                    musicInfoWstr = qfi.fileName().toStdWString();
-                titlesList.push_back(wstr2str_2UTF8(musicInfoWstr));//歌曲名添加进入MusicPlay模块的列表
-                l.push_back(QString::fromStdWString(musicInfoWstr));//歌曲名添加进展示的歌曲列表
-                musicInfoWstr = L"";
-                lpMusicInfo->GetValue(PKEY_Music_Artist, &musicInfoValue);
-                for (ULONG i = 0; i < musicInfoValue.calpwstr.cElems; i++)
-                {
-                    musicInfoWstr += musicInfoValue.calpwstr.pElems[i];
-                    artistsVector.push_back(wstr2str_2UTF8(musicInfoValue.calpwstr.pElems[i]));
-                    if(i != musicInfoValue.calpwstr.cElems - 1)
-                        musicInfoWstr += L"、";
-                }
-                if (musicInfoWstr == L"")
-                    l[0] = qfi.fileName();
-                artistsList.push_back(artistsVector);//作曲家添加到MusicPlay模块的作曲家列表
-                l.push_back(QString::fromStdWString(musicInfoWstr));//歌手添加进展示的歌曲列表中
-                lpMusicInfo->GetValue(PKEY_Music_AlbumTitle, &musicInfoValue);
-                if (musicInfoValue.bstrVal != NULL)
-                    musicInfoWstr = (WCHAR*)musicInfoValue.bstrVal;
-                else
-                    musicInfoWstr = L"";
-                albumTitlesList.push_back(wstr2str_2UTF8(musicInfoWstr));//专辑名添加进MusicPlay模块的专辑名列表中
-                l.push_back(QString::fromStdWString(musicInfoWstr));//专辑名添加进展示的歌曲列表中
-                lpMusicInfo->GetValue(PKEY_Media_Duration, &musicInfoValue);
-                ULONGLONG MusicDuration = musicInfoValue.uhVal.QuadPart;// 100ns units, not milliseconds
-                int Minutes = MusicDuration / 10000 / 1000 / 60;
-                int Seconds = MusicDuration / 10000 / 1000 % 60;
-                musicInfoWstr = L"";
-                if (Minutes < 10)
-                    musicInfoWstr += L'0';
-                musicInfoWstr += std::to_wstring(Minutes) + L":";
-                if (Seconds < 10)
-                    musicInfoWstr += L'0';
-                musicInfoWstr += std::to_wstring(Seconds);
-                l.push_back(QString::fromStdWString(musicInfoWstr));
-            }
-            else
-            {
-                titlesList.push_back(qfi.fileName().toStdString());
-                artistsList.push_back(std::vector<std::string>());
-                albumTitlesList.push_back("");
-                l.push_back(qfi.fileName());
-                l.push_back("");
-                l.push_back("");
-                l.push_back("");
-            }
-            ui.musicListWidget->addRow(l);
-        }
-        mp.setMusicsListVector(musicsList);
-        mp.setBasicMusicsInformations(titlesList, artistsList, albumTitlesList);
-        ui.musicListWidget->setEditTriggers(QListView::NoEditTriggers);
+        std::thread showLocalMusicsListThread(&dpMusic::showLocalMusicsListProc, this, p);
+        showLocalMusicsListThread.detach();//脱离主线程，异步调用
     }
 }
 void dpMusic::listViewDoubleClicked(QModelIndex index)

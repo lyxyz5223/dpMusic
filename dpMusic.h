@@ -26,7 +26,8 @@ class dpMusic : public QMainWindow
 public:
     dpMusic(QWidget* parent = nullptr);
     ~dpMusic();
-    void onMusicPlayFinished();
+    //void onMusicPlayFinished();
+    void showLocalMusicsListProc(QString path);
     Ui::dpMusicClass getUi() {
         return ui;
     }

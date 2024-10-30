@@ -1,15 +1,15 @@
 #include "TranslucentTextButton.h"
 #include <qpainter.h>
 
-TranslucentTextButton::TranslucentTextButton(QWidget* parent) : QPushButton(parent)
+TranslucentTextButton::TranslucentTextButton(QWidget* parent) : QLabel(parent)
 {
 
 }
 
-TranslucentTextButton::TranslucentTextButton(QString text, QWidget* parent) : QPushButton(parent)
+TranslucentTextButton::TranslucentTextButton(QString text, QWidget* parent) : QLabel(parent)
 {
 	this->setText(text);
-	QPushButton::setText("");
+	//QPushButton::setText("");
 	this->adjustSize();
 }
 

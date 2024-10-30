@@ -11,6 +11,8 @@ MyMusicsListWidget::MyMusicsListWidget(QWidget* parent) : QListWidget(parent)
 	myVerticalScrollBar->setRadius(7, 7);
 	setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 	setItemDelegate(myMusicsListViewItemDelegate);
+	//添加列表项的信号与槽的绑定
+	connect(this, &MyMusicsListWidget::addRowSignal, this, &MyMusicsListWidget::addRowProc);
 }
 
 void MyMusicsListWidget::paintEvent(QPaintEvent* e)
