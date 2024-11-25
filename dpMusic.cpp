@@ -1,5 +1,6 @@
 #include "dpMusic.h"
 #include <QInputDialog>
+#include "request.h"
 #ifdef _WIN32
 #include <Windows.h>
 //#pragma comment(lib,"Version.lib")
@@ -24,9 +25,9 @@ void onMusicEnd(void* pUserData, ma_sound* pSound)
     MusicPlay::ma_sound_pUserData *ud = (MusicPlay::ma_sound_pUserData*)pUserData;
     dpMusic* dp = (dpMusic*)ud->parentClass;
     MusicPlay* mp = (MusicPlay*)ud->musicplayClass;
-    if (mp->getIsAutoPlayNextOne())
+    if (mp->isAutoPlayNextOne())
     {
-        dp->getUi().musicInformation->setText(mp->getFileNameUTF8().c_str());
+        dp->getUi().musicInformation->setText(mp->getMusicsInformations().titlesList[mp->getPlayingIndex() - 1].c_str());
         mp->setEndCallback(onMusicEnd, dp, mp);
     }
 
@@ -83,26 +84,46 @@ void dpMusic::mousePressEvent(QMouseEvent* e)//鼠标按下事件
     }
     QMainWindow::mousePressEvent(e);
 }
+void dpMusic::showHomepage()
+{
+    showOnlineMusicsList(searchMusic("好运来", "title"));
+}
+void dpMusic::showOnlineMusicsList(std::vector<std::string> musicsList)
+{
+    QStandardItemModel* model = new QStandardItemModel;
+    for (int i = 0; i < musicsList.size(); i++)
+    {
+        QList<QStandardItem*> items;
+        for (int i = 0; i < 4; i++) items << new QStandardItem();
+        items[0]->setText(QString::fromStdString(musicsList[i]));
+        model->appendRow(items);
+    }
+    ui.musicListView->setModel(model);
+}
 void dpMusic::showLocalMusicsListProc(QString path)
 {
-    mp.setPathUTF8(path.toStdString());
     QDir dir;
-    dir.setPath(mp.getPathUTF8().c_str());
+    dir.setPath(path);
     QFileInfoList fil;
     QStringList strList;//文件列表，歌曲信息
-    std::vector<std::string> musicsList;//歌曲信息
+    std::vector<std::string> musicsFileNameList;//歌曲文件名称信息
+    std::vector<std::string> musicsFilePathList;//歌曲文件路径信息
     std::vector<std::string> titlesList;//歌曲标题信息
     std::vector<std::vector<std::string>> artistsList;//歌曲歌手信息
-    std::vector<std::string> albumTitlesList;//歌曲专辑名信息
+    std::vector<std::string> albumTitlesList;//歌曲专辑名信musicsFilePathList息
     QStringList filterList;//后缀过滤
     filterList << "*.flac" << "*.mp3" << "*.wav" << "*.ogg" << "*.ape";
     fil = dir.entryInfoList(filterList, QDir::Filter::Files, QDir::SortFlag::Name);
-    ui.musicListWidget->setResizeMode(QListView::Adjust);
-    ui.musicListWidget->setAutoScroll(true);
-    ui.musicListWidget->clear();
+    //ui.musicListView->setResizeMode(QListView::Adjust);
+    QStandardItemModel* model = new QStandardItemModel;
+    ui.musicListView->setAutoScroll(true);
+    ui.musicListView->reset();
     for (QFileInfo qfi : fil)//遍历列表
     {
-        musicsList.push_back(qfi.fileName().toStdString());
+        QList<QStandardItem*> items;
+        for (int i = 0; i < 4; i++) items << new QStandardItem();
+        musicsFileNameList.push_back(qfi.fileName().toStdString());
+        musicsFilePathList.push_back(qfi.absolutePath().toStdString());
         strList.push_back(qfi.fileName());
         printf(UTF8ToANSI("QFileInfoList：%s\n").c_str(), UTF8ToANSI(qfi.fileName().toStdString()).c_str());
 #ifdef _WIN32
@@ -115,6 +136,7 @@ void dpMusic::showLocalMusicsListProc(QString path)
         HRESULT hr = SHGetPropertyStoreFromParsingName(musicAbsoluteFilePath.c_str(), NULL, GPS_DEFAULT, __uuidof(IPropertyStore), (void**)&lpMusicInfo);
         if (SUCCEEDED(hr))
         {
+            //获取歌曲标题
             PROPVARIANT* musicInfoValue = new PROPVARIANT;
             std::wstring musicInfoWstr;
             std::vector<std::string> artistsVector;
@@ -125,7 +147,9 @@ void dpMusic::showLocalMusicsListProc(QString path)
                 musicInfoWstr = qfi.fileName().toStdWString();
             titlesList.push_back(wstr2str_2UTF8(musicInfoWstr));//歌曲名添加进入MusicPlay模块的列表
             l.push_back(QString::fromStdWString(musicInfoWstr));//歌曲名添加进展示的歌曲列表
-            musicInfoWstr = L"";
+            items[0]->setText(QString::fromStdWString(musicInfoWstr));
+            //获取歌曲艺术家
+            musicInfoWstr.clear();
             lpMusicInfo->GetValue(PKEY_Music_Artist, musicInfoValue);
             for (ULONG i = 0; i < musicInfoValue->calpwstr.cElems; i++)
             {
@@ -138,25 +162,28 @@ void dpMusic::showLocalMusicsListProc(QString path)
                 l[0] = qfi.fileName();
             artistsList.push_back(artistsVector);//作曲家添加到MusicPlay模块的作曲家列表
             l.push_back(QString::fromStdWString(musicInfoWstr));//歌手添加进展示的歌曲列表中
+            items[1]->setText(QString::fromStdWString(musicInfoWstr));
+            //获取专辑名
             lpMusicInfo->GetValue(PKEY_Music_AlbumTitle, musicInfoValue);
             if (musicInfoValue->bstrVal != NULL)
                 musicInfoWstr = (WCHAR*)musicInfoValue->bstrVal;
             else
-                musicInfoWstr = L"";
+                musicInfoWstr.clear();
             albumTitlesList.push_back(wstr2str_2UTF8(musicInfoWstr));//专辑名添加进MusicPlay模块的专辑名列表中
             l.push_back(QString::fromStdWString(musicInfoWstr));//专辑名添加进展示的歌曲列表中
+            items[2]->setText(QString::fromStdWString(musicInfoWstr));
+            //获取歌曲时长
             lpMusicInfo->GetValue(PKEY_Media_Duration, musicInfoValue);
             ULONGLONG MusicDuration = musicInfoValue->uhVal.QuadPart;// 100ns units, not milliseconds
             int Minutes = MusicDuration / 10000 / 1000 / 60;
             int Seconds = MusicDuration / 10000 / 1000 % 60;
-            musicInfoWstr = L"";
-            if (Minutes < 10)
-                musicInfoWstr += L'0';
+            musicInfoWstr.clear();
+            if (Minutes < 10) musicInfoWstr += L'0';
             musicInfoWstr += std::to_wstring(Minutes) + L":";
-            if (Seconds < 10)
-                musicInfoWstr += L'0';
+            if (Seconds < 10) musicInfoWstr += L'0';
             musicInfoWstr += std::to_wstring(Seconds);
             l.push_back(QString::fromStdWString(musicInfoWstr));
+            items[3]->setText(QString::fromStdWString(musicInfoWstr));
             delete musicInfoValue;
             lpMusicInfo->Release();
         }
@@ -165,22 +192,16 @@ void dpMusic::showLocalMusicsListProc(QString path)
             titlesList.push_back(qfi.fileName().toStdString());
             artistsList.push_back(std::vector<std::string>());
             albumTitlesList.push_back("");
-            l.push_back(qfi.fileName());
-            l.push_back("");
-            l.push_back("");
-            l.push_back("");
+            items[0]->setText(qfi.fileName());
+            l << qfi.fileName() << "" << "" << "";
         }
-        ui.musicListWidget->addRow(l);
-        l.clear();
+        model->appendRow(items);
+        ui.musicListView->setModel(model);
 #endif //_WIN32
     }
-    mp.setMusicsListVector(musicsList);
-    mp.setBasicMusicsInformations(titlesList, artistsList, albumTitlesList);
-    musicsList.clear();
-    titlesList.clear();
-    artistsList.clear();
-    albumTitlesList.clear();
-    ui.musicListWidget->setEditTriggers(QListView::NoEditTriggers);
+    mp.setMusicsInformations(titlesList, artistsList, albumTitlesList);
+    mp.setMusicFilesInformations(musicsFileNameList, musicsFilePathList);
+    ui.musicListView->setEditTriggers(QListView::NoEditTriggers);
 }
 void dpMusic::showLocalMusicsList()
 {
@@ -189,7 +210,7 @@ void dpMusic::showLocalMusicsList()
     if (p.isEmpty())
     {
         p = "C:\\Users\\lyxyz5223\\Desktop\\LxMusicDownloads";
-        p = "E:\\mp3播放器\\CloudMusic";
+        //p = "E:\\mp3播放器\\CloudMusic";
         //E:\mp3播放器\CloudMusic
     }
 #endif // _DEBUG
@@ -197,30 +218,23 @@ void dpMusic::showLocalMusicsList()
     {
         std::thread showLocalMusicsListThread(&dpMusic::showLocalMusicsListProc, this, p);
         showLocalMusicsListThread.detach();//脱离主线程，异步调用
+        //showLocalMusicsListProc(p);
     }
 }
 void dpMusic::listViewDoubleClicked(QModelIndex index)
 {
-    //while (ui.musicListWidget->model()->canFetchMore(index))
-    //    ui.musicListWidget->model()->fetchMore(index);
-    int rowCount = ui.musicListWidget->model()->rowCount();
-    int columnCount = ui.musicListWidget->model()->columnCount();
-    mp.setPlayingIndex(index.row()*(columnCount)+index.column()+1);
-    mp.setFileNameUTF8(mp.getMusicsListVector().at(mp.getPlayingIndex() - 1));
-    mp.setMusicTitleUTF8(mp.getTitlesListVector().at(mp.getPlayingIndex() - 1));
-    //mp.setFileNameUTF8(ui.musicListWidget->model()->data(index).toString().toStdString());
-    //if (mp.isPlaying())//在类里面已经实现了检测，无需再次检测
+    mp.setPlayingIndex(index.row() + 1);
     mp.play();
     ui.play->setIcon(QIcon(":/dpMusic/src/svgs/feather/pause.svg"));
-    ui.musicInformation->setText(mp.getMusicTitleUTF8().c_str());
+    ui.musicInformation->setText(mp.getMusicsInformations().titlesList[mp.getPlayingIndex() - 1].c_str());
     mp.setEndCallback(onMusicEnd,this,&mp);
 }
 
 void dpMusic::MusicControlPlayPausedClicked()
 {
-    if (mp.isPaused() || !mp.isPlaying())//暂停或者不在播放
+    if (!mp.isPlaying())//不在播放
     {
-        if (mp.getFileNameUTF8() != "")
+        if (mp.getPlayingIndex() != 0)
         {
             ui.play->setIcon(QIcon(":/dpMusic/src/svgs/feather/pause.svg"));
             mp.pause();
@@ -235,7 +249,7 @@ void dpMusic::MusicControlPlayPausedClicked()
 
 void dpMusic::MusicControlPreviousOneClicked()
 {
-    if (mp.getMusicsListVector().size())
+    if (mp.getMusicsInformations().titlesList.size())
     {
 
         if (mp.getPlayingIndex() > 1)
@@ -245,22 +259,21 @@ void dpMusic::MusicControlPreviousOneClicked()
         else
         {
             //QMessageBox::information(this, "~~~", "这已经是第一首了哦~");
-            mp.setPlayingIndex(mp.getMusicsListVector().size());
+            mp.setPlayingIndex(mp.getMusicsInformations().titlesList.size());
         }
-        mp.setFileNameUTF8(mp.getMusicsListVector()[mp.getPlayingIndex() - 1]);
-        mp.setMusicTitleUTF8(mp.getTitlesListVector()[mp.getPlayingIndex() - 1]);
         mp.play();
         ui.play->setIcon(QIcon(":/dpMusic/src/svgs/feather/pause.svg"));
-        ui.musicInformation->setText(mp.getMusicTitleUTF8().c_str());
+        ui.musicInformation->setText(mp.getMusicsInformations().titlesList[mp.getPlayingIndex() - 1].c_str());
         mp.setEndCallback(onMusicEnd, this, &mp);
     }
 }
 
 void dpMusic::MusicControlNextOneClicked()
 {
-    if (mp.getMusicsListVector().size())
+    size_t musicsListSize = mp.getMusicsInformations().titlesList.size();
+    if (musicsListSize)
     {
-        if (mp.getPlayingIndex() < mp.getMusicsListVector().size())
+        if (mp.getPlayingIndex() < musicsListSize)
         {
             mp.setPlayingIndex(mp.getPlayingIndex() + 1);
         }
@@ -269,11 +282,9 @@ void dpMusic::MusicControlNextOneClicked()
             //QMessageBox::information(this, "~~~", "这已经是最后一首了哦~");
             mp.setPlayingIndex(1);
         }
-        mp.setFileNameUTF8(mp.getMusicsListVector()[mp.getPlayingIndex() - 1]);
-        mp.setMusicTitleUTF8(mp.getTitlesListVector()[mp.getPlayingIndex() - 1]);
         mp.play();
         ui.play->setIcon(QIcon(":/dpMusic/src/svgs/feather/pause.svg"));
-        ui.musicInformation->setText(mp.getMusicTitleUTF8().c_str());
+        ui.musicInformation->setText(mp.getMusicsInformations().titlesList[mp.getPlayingIndex() - 1].c_str());
         mp.setEndCallback(onMusicEnd, this, &mp);
     }
 }

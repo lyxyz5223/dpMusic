@@ -4,127 +4,125 @@
 #include <functional>
 #include <miniaudio.h>
 #include "stringProcess.h"
-
 void on_ma_sound_end_proc(void* pUserData, ma_sound* pSound);
 
 class MusicPlay
 {
 public:
+	struct MusicsInformations {
+		std::vector<std::string> titlesList;
+		std::vector<std::vector<std::string>> artistsList;
+		std::vector<std::string> albumTitlesList;
+		std::vector<long long> duration;
+	};
+	struct MusicFilesInfo {
+		std::vector<std::string> fileName;
+		std::vector<std::string> filePath;
+	};
+	struct MusicPlayInfo {
+		int playingIndex = 0;//从1开始！
+		bool autoPlayNextOne = true;
+	};
+	enum MusicPlayStatus {
+		playing,
+		paused,
+		stopped
+	};
+	MusicPlay();
 	~MusicPlay() {
 		ma_engine_uninit(&engine);
 	}
-	MusicPlay(std::string FileName, std::string Path = ".\\");
-	MusicPlay();
-	void play();
-	void pause();
-	void stop();
-	bool isPaused() const {
-		return paused;
-	}
-	bool isPlaying() const {
-		return playing;
-	}
-	void setIsPaused(bool TrueOrFalse) {
-		paused = TrueOrFalse;
-	}
-	void setIsPlaying(bool TrueOrFalse) {
-		playing = TrueOrFalse;
-	}
-	void setPathUTF8(std::string Path) {
-		Path = UTF8ToANSI(Path);
-		if (Path != "" && Path.back() != '\\' && Path.back() != '/')
-			Path += '\\';
-		path = Path;
-	}
-	void setPathANSI(std::string Path) {
-		if (Path != "" && Path.back() != '\\' && Path.back() != '/')
-			Path += '\\';
-		path = Path;
-	}
-	std::string getPathUTF8() 
+	//音乐控制函数
+	void play()
 	{
-		return ANSIToUTF8(path);
+		if (engineResult == MA_SUCCESS)
+		{
+			ma_sound_uninit(&sound);
+			ma_result soundResult = ma_sound_init_from_file_w(&engine, 
+				str2wstr_2UTF8(filesInfo.filePath[getPlayingIndex() - 1] + filesInfo.fileName[getPlayingIndex() - 1]).c_str(),
+				0, 0, 0, &sound);
+			if (soundResult == MA_SUCCESS)
+			{
+				sound.endCallback = on_ma_sound_end_proc;
+				sound.pEndCallbackUserData = &procData;
+				status = playing;
+				ma_sound_start(&sound);
+			}
+			//ma_engine_play_sound(&engine, (path + fileName).c_str(), NULL);
+		}
 	}
-	std::string getPathANSI() {
-		return path;
+	void pause() {
+		if (isPaused())
+		{
+			ma_sound_start(&sound);
+			status = playing;
+		}
+		else {
+			//ma_sound_stop_with_fade_in_milliseconds(&sound,1000);
+			//用了上述语句导致无法恢复播放
+			ma_sound_stop(&sound);
+			status = paused;
+		}
 	}
-	void setFileNameUTF8(std::string FileName) {
-		FileName = UTF8ToANSI(FileName);
-		fileName = FileName;
+	void stop()
+	{
+		if (isPlaying() || isPaused())
+		{
+			ma_sound_uninit(&sound);
+			status = stopped;
+		}
 	}
-	void setFileNameANSI(std::string FileName) {
-		fileName = FileName;
+	bool isPaused() const { 
+		return (status == paused ? true : false); 
 	}
-	std::string getFileNameANSI() {
-		return fileName;
+	bool isPlaying() const { 
+		return (status == playing ? true : false); 
 	}
-	std::string getFileNameUTF8() {
-		return ANSIToUTF8(fileName);
+	bool isStopped() const { 
+		return (status == stopped ? true : false); 
 	}
-	void setMusicTitleUTF8(std::string MusicTitle) {
-		MusicTitle = UTF8ToANSI(MusicTitle);
-		musicTitle = MusicTitle;
-	}
-	void setMusicTitleANSI(std::string MusicTitle) {
-		musicTitle = musicTitle;
-	}
-	std::string getMusicTitleANSI() {
-		return musicTitle;
-	}
-	std::string getMusicTitleUTF8() {
-		return ANSIToUTF8(musicTitle);
-	}
-	void setTitlesListVector(std::vector<std::string> titlesVector) {
-		titlesList = titlesVector;
-	}
-	std::vector<std::string> getTitlesListVector() {
-		return titlesList;
-	}
-	void setArtistsListVector(std::vector<std::vector<std::string>> artistsVector) {
-		artistsList = artistsVector;
-	}
-	std::vector<std::vector<std::string>> getArtistsListVector() {
-		return artistsList;
-	}
-	void setAlbumTitlesListVector(std::vector<std::string> albumTitlesVector) {
-		albumTitlesList = albumTitlesVector;
-	}
-	std::vector<std::string> getAlbumTitlesListVector() {
-		return albumTitlesList;
-	}
-	void setBasicMusicsInformations(
-		std::vector<std::string> titlesVector,
-		std::vector<std::vector<std::string>> artistsVector,
+	void setMusicsInformations(std::vector<std::string> titlesVector, 
+		std::vector<std::vector<std::string>> artistsVector, 
 		std::vector<std::string> albumTitlesVector) {
-		titlesList = titlesVector;
-		artistsList = artistsVector;
-		albumTitlesList = albumTitlesVector;
+		musicsInfo.titlesList = titlesVector;
+		musicsInfo.artistsList = artistsVector;
+		musicsInfo.albumTitlesList = albumTitlesVector;
 	}
-	void setMusicsListVector(std::vector<std::string> musicNameListVector) {
-		musicsList = musicNameListVector;
+	/*---*/auto getMusicsInformations() const { 
+		return musicsInfo; 
 	}
-	std::vector<std::string> getMusicsListVector() {
-		return musicsList;
+	void setMusicFilesInformations(std::vector<std::string> fileName,
+		std::vector<std::string> filePath) {
+		for (std::vector<std::string>::iterator iter = filePath.begin(); iter != filePath.end(); iter++)
+			if (*iter != "" && (*iter).back() != '\\' && (*iter).back() != '/')
+				*iter += '\\';
+		filesInfo.fileName = fileName;
+		filesInfo.filePath = filePath;
+	}
+	/*---*/auto getMusicFilesInformations() const {
+		return filesInfo;
 	}
 	//PlayingIndex从1开始！
-	void setPlayingIndex(int index) {
-		playingIndex = index;
+	void setPlayingIndex(size_t index) {
+		if (index < 1 || index > musicsInfo.titlesList.size())
+			throw "error index invalid";
+		mpInfo.playingIndex = index;
 	}
 	//PlayingIndex从1开始！
-	int getPlayingIndex() {
-		return playingIndex;
+	int getPlayingIndex() const {
+		return mpInfo.playingIndex;
 	}
-	int getNextPlayingIndex() {
-		return (playingIndex < musicsList.size() ? playingIndex + 1 : 1);
+	int getNextPlayingIndex() const {
+		return (mpInfo.playingIndex < musicsInfo.titlesList.size() ? mpInfo.playingIndex + 1 : 1);
 	}
-	void setIsAutoPlayNextOne(bool TrueOrFalse) {
-		autoPlayNextOne = TrueOrFalse;
+	void setAutoPlayNextOne(bool trueOrFalse) {
+		mpInfo.autoPlayNextOne = trueOrFalse;
 	}
-	bool getIsAutoPlayNextOne() {
-		return autoPlayNextOne;
+	bool isAutoPlayNextOne() const {
+		return mpInfo.autoPlayNextOne;
 	}
-	ma_sound getSound() {
-		return sound;
+	void setStatus(MusicPlayStatus mpStatus) {
+		status = mpStatus;
 	}
 	//proc example:
 	//void CallBackProc(void* pUserData, ma_sound* pSound)
@@ -144,25 +142,14 @@ public:
 	};
 	struct ma_data {
 		ma_sound_pUserData pUserData;//用户处理数据，包含MusicPlay类和dpMusic类
-		ma_sound_end_proc callBackFunction;//用户的回调函数
+		ma_sound_end_proc callBackFunction = 0;//用户的回调函数
 	} procData;
-	bool uninit_sound = false;
-
 private:
-	std::string path = ".\\";//文件路径
-	std::string fileName = "";//文件名
-	std::string musicTitle = "";//歌曲名
-	bool paused = false;
-	bool playing = false;
 	//以下几个容器中的字符串（包括容器的容器中的）均为UTF-8编码格式下的字符串
-	std::vector<std::string> musicsList;
-	std::vector<std::string> titlesList;
-	std::vector<std::vector<std::string>> artistsList;
-	std::vector<std::string> albumTitlesList;
-	int playingIndex = 0;//从1开始！
-	bool finished = false;
-	bool multiPlay = false;
-	bool autoPlayNextOne = true;
+	MusicsInformations musicsInfo;
+	MusicFilesInfo filesInfo;
+	MusicPlayInfo mpInfo;
+	MusicPlayStatus status = stopped;
 	ma_result engineResult;
 	ma_engine engine;//音乐播放Engine
 	ma_sound sound;

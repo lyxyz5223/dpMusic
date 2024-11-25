@@ -32,13 +32,14 @@ public:
         return ui;
     }
 public slots:
+    void showOnlineMusicsList(std::vector<std::string> list);
     void showLocalMusicsList();
     void listViewDoubleClicked(QModelIndex index);
     void MusicControlPlayPausedClicked();
     void MusicControlPreviousOneClicked();
     void MusicControlNextOneClicked();
     void maximumBtnClicked();
-
+    void showHomepage();
 protected:
     void paintEvent(QPaintEvent* e) override;
     void mousePressEvent(QMouseEvent* e);

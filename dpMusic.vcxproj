@@ -60,14 +60,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <IncludePath>.\irrKlang-64bit-1.6.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>.\irrKlang-64bit-1.6.0\lib\Winx64-visualStudio;$(LibraryPath)</LibraryPath>
+    <IncludePath>.\irrKlang-64bit-1.6.0\include;.\OpenSSL-3.4.0\include;D:\C++\dpMusic\jsoncpp-1.9.6\dist;$(IncludePath)</IncludePath>
+    <LibraryPath>.\irrKlang-64bit-1.6.0\lib\Winx64-visualStudio;D:\C++\dpMusic\OpenSSL-3.4.0\lib\VC\x64\MDd;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libssl.lib;libssl_static.lib;libcrypto_static.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -99,11 +99,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="jsoncpp-1.9.6\dist\jsoncpp.cpp" />
     <ClCompile Include="MusicControlButton.cpp" />
     <ClCompile Include="MusicPlay.cpp" />
+    <ClCompile Include="MyMusicsListViewItemModel.cpp" />
     <ClCompile Include="MyMusicsListViewParentWidget.cpp" />
     <ClCompile Include="MyScrollBar.cpp" />
-    <ClCompile Include="MyMusicsListWidget.cpp" />
+    <ClCompile Include="MyMusicsListView.cpp" />
+    <ClCompile Include="request.cpp" />
     <ClCompile Include="stringProcess.cpp" />
     <ClCompile Include="TranslucentIconButton.cpp" />
     <ClCompile Include="TranslucentTextButton.cpp" />
@@ -122,11 +125,14 @@
     <QtMoc Include="TranslucentIconButton.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="httplib.h" />
     <ClInclude Include="MusicPlay.h" />
+    <ClInclude Include="MyMusicsListViewItemModel.h" />
     <ClInclude Include="MyMusicsListViewParentWidget.h" />
     <QtMoc Include="TranslucentTextButton.h" />
     <QtMoc Include="MyScrollBar.h" />
-    <QtMoc Include="MyMusicsListWidget.h" />
+    <QtMoc Include="MyMusicsListView.h" />
+    <ClInclude Include="request.h" />
     <ClInclude Include="stringProcess.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

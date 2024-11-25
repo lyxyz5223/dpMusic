@@ -58,7 +58,7 @@
     <ClCompile Include="MusicPlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MyMusicsListWidget.cpp">
+    <ClCompile Include="MyMusicsListView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MyScrollBar.cpp">
@@ -68,6 +68,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TranslucentTextButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyMusicsListViewItemModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="request.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="jsoncpp-1.9.6\dist\jsoncpp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -84,7 +93,7 @@
     <QtMoc Include="TranslucentTextButton.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="MyMusicsListWidget.h">
+    <QtMoc Include="MyMusicsListView.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -96,6 +105,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MyMusicsListViewParentWidget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyMusicsListViewItemModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="request.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="httplib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

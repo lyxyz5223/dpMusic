@@ -190,17 +190,30 @@
          </sizepolicy>
         </property>
         <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,0,0,0,0,0">
-         <item row="0" column="8">
-          <widget class="QLabel" name="timeLabel">
-           <property name="text">
-            <string>时长</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="6">
           <widget class="QLabel" name="albumLabel">
            <property name="text">
             <string>专辑</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="5">
+          <widget class="Line" name="line_4">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLabel" name="nameLabel">
+           <property name="text">
+            <string>名称</string>
            </property>
           </widget>
          </item>
@@ -226,19 +239,6 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="5">
-          <widget class="Line" name="line_4">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="3">
           <widget class="Line" name="line_3">
            <property name="maximumSize">
@@ -252,48 +252,17 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="2">
-          <widget class="QLabel" name="nameLabel">
-           <property name="text">
-            <string>名称</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0" colspan="9">
-          <widget class="MyMusicsListWidget" name="musicListWidget">
-           <property name="editTriggers">
-            <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
-           </property>
-           <property name="dragEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="dragDropOverwriteMode">
-            <bool>false</bool>
-           </property>
-           <property name="dragDropMode">
-            <enum>QAbstractItemView::DragDropMode::DragDrop</enum>
-           </property>
-           <property name="defaultDropAction">
-            <enum>Qt::DropAction::MoveAction</enum>
-           </property>
-           <property name="selectionMode">
-            <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
-           </property>
-           <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-           </property>
-           <property name="verticalScrollMode">
-            <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
-           </property>
-           <property name="horizontalScrollMode">
-            <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="4">
           <widget class="QLabel" name="artistLabel">
            <property name="text">
             <string>艺术家</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="8">
+          <widget class="QLabel" name="timeLabel">
+           <property name="text">
+            <string>时长</string>
            </property>
           </widget>
          </item>
@@ -323,6 +292,37 @@
            </property>
            <property name="orientation">
             <enum>Qt::Orientation::Vertical</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="9">
+          <widget class="MyMusicsListView" name="musicListView">
+           <property name="editTriggers">
+            <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+           </property>
+           <property name="dragEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="dragDropOverwriteMode">
+            <bool>false</bool>
+           </property>
+           <property name="dragDropMode">
+            <enum>QAbstractItemView::DragDropMode::DragDrop</enum>
+           </property>
+           <property name="defaultDropAction">
+            <enum>Qt::DropAction::MoveAction</enum>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+           </property>
+           <property name="verticalScrollMode">
+            <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
+           </property>
+           <property name="horizontalScrollMode">
+            <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
            </property>
           </widget>
          </item>
@@ -454,9 +454,9 @@
    <header>translucenticonbutton.h</header>
   </customwidget>
   <customwidget>
-   <class>MyMusicsListWidget</class>
-   <extends>QListWidget</extends>
-   <header>mymusicslistwidget.h</header>
+   <class>MyMusicsListView</class>
+   <extends>QTreeView</extends>
+   <header location="global">mymusicslistview.h</header>
   </customwidget>
  </customwidgets>
  <resources>
@@ -576,18 +576,34 @@
    </hints>
   </connection>
   <connection>
-   <sender>musicListWidget</sender>
+   <sender>musicListView</sender>
    <signal>doubleClicked(QModelIndex)</signal>
    <receiver>dpMusicClass</receiver>
    <slot>listViewDoubleClicked(QModelIndex)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>423</x>
-     <y>202</y>
+     <x>378</x>
+     <y>162</y>
     </hint>
     <hint type="destinationlabel">
-     <x>397</x>
-     <y>22</y>
+     <x>408</x>
+     <y>25</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>dpMusicClass</receiver>
+   <slot>showHomepage()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>51</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>152</x>
+     <y>13</y>
     </hint>
    </hints>
   </connection>
@@ -599,5 +615,6 @@
   <slot>MusicControlNextOneClicked()</slot>
   <slot>showLocalMusicsList()</slot>
   <slot>maximumBtnClicked()</slot>
+  <slot>showHomepage()</slot>
  </slots>
 </ui>
