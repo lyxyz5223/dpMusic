@@ -62,13 +62,11 @@ license you like.
 #include "stringProcess.h"
 #include "request.h"
 #include "json/json.h"
-std::vector<std::string> searchMusic(std::string str, std::string type)
+bool downloadFile(std::wstring url, std::wstring fileName)
 {
 	using namespace std;
-	wstring parameter = L"-V --auto-file-renaming=false --allow-overwrite=true -o ";
-	wstring fileName = L"searchResult.json";
-	wstring url = L"https://music.163.com/api/search/get/web?s=zjl&type=1&offset=0&total=true&limit=20";
-	parameter += fileName + L" " + url;
+	wstring parameter = L"-V --auto-file-renaming=false --allow-overwrite=true -o \"";
+	parameter += fileName + L"\" \"" + url + L"\"";
 	SHELLEXECUTEINFO sei = { 0 };
 	sei.cbSize = sizeof(SHELLEXECUTEINFO);
 	sei.lpVerb = L"open";
@@ -77,23 +75,60 @@ std::vector<std::string> searchMusic(std::string str, std::string type)
 	sei.nShow = SW_NORMAL;
 	sei.fMask = SEE_MASK_NOCLOSEPROCESS;
 	ShellExecuteEx(&sei);
+	if (sei.hProcess == NULL)
+		return false;
 	WaitForSingleObject(sei.hProcess, INFINITE);
 	CloseHandle(sei.hProcess);
+	return true;
+}
+MusicsFullInfo searchMusic(std::string str, MusicType_wy type)
+{
+	using namespace std;
+	wstring parameter = L"-V --auto-file-renaming=false --allow-overwrite=true -o ";
+	wstring fileName = L"searchResult.json";
+	wstring url = L"\"https://music.163.com/api/search/get/web?offset=0&total=true&limit=100&";
+	url += L"s=";
+	url += str2wstr_2UTF8(str);
+	url += L"&type=";
+	url += to_wstring(static_cast<int>(type)) + L"\"";
+	parameter += L"\"" + fileName + L"\" " + url;
+	SHELLEXECUTEINFO sei = { 0 };
+	sei.cbSize = sizeof(SHELLEXECUTEINFO);
+	sei.lpVerb = L"open";
+	sei.lpFile = L"aria2c.exe";
+	sei.lpParameters = parameter.c_str();
+	sei.nShow = SW_NORMAL;
+	sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+	ShellExecuteEx(&sei);
+	if(sei.hProcess != NULL)
+		WaitForSingleObject(sei.hProcess, INFINITE);
+	CloseHandle(sei.hProcess);
 	ifstream f(fileName);
-	if (!f.is_open()) return vector<string>();
+	if (!f.is_open()) return {};
 	using namespace Json;
 	Reader reader;
 	Value root;
 	reader.parse(f, root);
 	f.close();
-	if(!reader.good()) return vector<string>();
-	vector<string> result;
+	if (!reader.good()) return {};
+	MusicsFullInfo result;
 	root = root["result"]["songs"];
-	for (int i = 0; i < root.size(); i++)
+	for (ArrayIndex i = 0; i < root.size(); i++)
 		if (root[i].type() == Json::objectValue)
 		{
-			result.push_back(root[i]["name"].asString());
+			result.musicsInformations.titlesList.push_back(root[i]["name"].asString());
 			cout << UTF8ToANSI(root[i]["name"].asString()) << endl;
+			Value artists = root[i]["artists"];
+			Value::Members members;
+			for (ArrayIndex j = 0; j < artists.size(); j++)
+				members.push_back(artists[j]["name"].asString());
+			result.musicsInformations.artistsList.push_back(members);
+			result.musicsInformations.albumTitlesList.push_back(root[i]["album"]["name"].asString());
+			result.musicsInformations.duration.push_back(root[i]["duration"].asLargestInt());
+			string url = "https://music.163.com/song/media/outer/url?id=";//id=1992141905
+			url += root[i]["id"].asString();
+			result.musicFilesInfo.fileName.push_back("");
+			result.musicFilesInfo.filePath.push_back(url);
 		}
 	return result;
 }

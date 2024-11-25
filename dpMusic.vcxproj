@@ -64,6 +64,7 @@
     <LibraryPath>.\irrKlang-64bit-1.6.0\lib\Winx64-visualStudio;D:\C++\dpMusic\OpenSSL-3.4.0\lib\VC\x64\MDd;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <IncludePath>D:\C++\dpMusic\jsoncpp-1.9.6\dist;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>

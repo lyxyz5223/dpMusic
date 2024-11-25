@@ -13,6 +13,7 @@
 
 //库
 #include "MusicPlay.h"
+#include "request.h"
 
 
 //VC++
@@ -32,7 +33,7 @@ public:
         return ui;
     }
 public slots:
-    void showOnlineMusicsList(std::vector<std::string> list);
+    void showOnlineMusicsList(MusicsFullInfo mfInfo);
     void showLocalMusicsList();
     void listViewDoubleClicked(QModelIndex index);
     void MusicControlPlayPausedClicked();

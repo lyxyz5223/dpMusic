@@ -1,5 +1,4 @@
 #include "MusicPlay.h"
-#include <thread>
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 
@@ -12,7 +11,7 @@ MusicPlay::MusicPlay()
 
 void callEndCallBackFunc(void* pUserData, ma_sound* pSound)
 {
-	//先等待on_ma_sound_end_proc执行结束并返回，再执行回调函数，否则ma_sound_uninit会死循环
+	//鍏堢瓑寰卭n_ma_sound_end_proc鎵ц缁撴潫骞惰繑鍥烇紝鍐嶆墽琛屽洖璋冨嚱鏁帮紝鍚﹀垯ma_sound_uninit浼氭寰幆
 
 	MusicPlay::ma_data* procData = (MusicPlay::ma_data*)pUserData;
 	MusicPlay* mp = (MusicPlay*)procData->pUserData.musicplayClass;
@@ -25,10 +24,3 @@ void callEndCallBackFunc(void* pUserData, ma_sound* pSound)
 	if (procData->callBackFunction != NULL)
 		procData->callBackFunction(&procData->pUserData, pSound);
 }
-
-void on_ma_sound_end_proc(void* pUserData, ma_sound* pSound)
-{
-	thread t(callEndCallBackFunc, pUserData, pSound);
-	t.detach();
-}
-

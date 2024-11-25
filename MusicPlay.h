@@ -3,8 +3,9 @@
 #include <vector>
 #include <functional>
 #include <miniaudio.h>
+#include <thread>
 #include "stringProcess.h"
-void on_ma_sound_end_proc(void* pUserData, ma_sound* pSound);
+void callEndCallBackFunc(void* pUserData, ma_sound* pSound);
 
 class MusicPlay
 {
@@ -28,6 +29,9 @@ public:
 		paused,
 		stopped
 	};
+	enum MusicPlayMode {
+		online, local
+	};
 	MusicPlay();
 	~MusicPlay() {
 		ma_engine_uninit(&engine);
@@ -43,7 +47,10 @@ public:
 				0, 0, 0, &sound);
 			if (soundResult == MA_SUCCESS)
 			{
-				sound.endCallback = on_ma_sound_end_proc;
+				sound.endCallback = [](void* pUserData, ma_sound* pSound) {
+					std::thread t(callEndCallBackFunc, pUserData, pSound);
+					t.detach();
+					};
 				sound.pEndCallbackUserData = &procData;
 				status = playing;
 				ma_sound_start(&sound);
@@ -99,8 +106,8 @@ public:
 		filesInfo.fileName = fileName;
 		filesInfo.filePath = filePath;
 	}
-	/*---*/auto getMusicFilesInformations() const {
-		return filesInfo;
+	/*---*/auto getMusicFilesInformations() {
+		return &filesInfo;
 	}
 	//PlayingIndex从1开始！
 	void setPlayingIndex(size_t index) {
@@ -121,8 +128,15 @@ public:
 	bool isAutoPlayNextOne() const {
 		return mpInfo.autoPlayNextOne;
 	}
+	MusicPlayMode getMode() const {
+		return mode;
+	}
+	//类里调用的函数，切勿在类外调用
 	void setStatus(MusicPlayStatus mpStatus) {
 		status = mpStatus;
+	}
+	void setMode(MusicPlayMode mpMode) {
+		mode = mpMode;
 	}
 	//proc example:
 	//void CallBackProc(void* pUserData, ma_sound* pSound)
@@ -132,7 +146,10 @@ public:
 	//设置播放完成后的回调函数
 	void setEndCallback(ma_sound_end_proc proc/*void* pUserData, ma_sound* pSound*/,void*parentClass,void*musicplayClass) {
 		procData = { {parentClass,musicplayClass}, proc };
-		sound.endCallback = on_ma_sound_end_proc;//先经过类本身的处理，再发放给用户处理
+		sound.endCallback = [](void* pUserData, ma_sound* pSound) {
+			std::thread t(callEndCallBackFunc, pUserData, pSound);
+			t.detach();
+			};//先经过类本身的处理，再发放给用户处理
 		sound.pEndCallbackUserData = &procData;//给类处理的数据
 	}
 	struct ma_sound_pUserData
@@ -153,4 +170,5 @@ private:
 	ma_result engineResult;
 	ma_engine engine;//音乐播放Engine
 	ma_sound sound;
+	MusicPlayMode mode = local;
 };
